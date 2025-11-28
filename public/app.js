@@ -15,6 +15,8 @@ const state = {
         commuteDistance: 10,
         savingsTarget: 0,
         savingsMonths: 0,
+        savingsGoalName: 'Emergency Fund',
+        additionalSavingsGoals: [],
         lat: null,
         lon: null,
         // New Fields
@@ -1039,8 +1041,11 @@ async function performAnalysis() {
         // Savings
         state.estimates.savings = Math.round(state.data.savingsTarget / state.data.savingsMonths);
 
+        // Calculate total additional savings
+        const additionalSavings = (state.data.additionalSavingsGoals || []).reduce((sum, goal) => sum + goal.monthlyAmount, 0);
+
         // Total Discretionary
-        const totalExpenses = state.data.rent + state.estimates.transport + state.estimates.groceries + state.estimates.utilities + state.estimates.petCost + state.estimates.loanCost + state.estimates.lifestyleCost + state.estimates.savings;
+        const totalExpenses = state.data.rent + state.estimates.transport + state.estimates.groceries + state.estimates.utilities + state.estimates.petCost + state.estimates.loanCost + state.estimates.lifestyleCost + state.estimates.savings + additionalSavings;
         state.estimates.discretionary = Math.round(state.data.income - totalExpenses);
 
         // Wait a bit to show completion
@@ -1269,10 +1274,47 @@ function renderDashboard() {
                             <span class="text-white font-bold">${currency}${lifestyleCost.toLocaleString()}</span>
                         </div>
                         ` : ''}
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Savings Goal</span>
-                            <span class="text-white font-bold">${currency}${savingsMonthly.toLocaleString()}</span>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-green-300 flex items-center gap-2">
+                            <i data-lucide="piggy-bank" class="w-4 h-4"></i> Savings Goals
+                        </h3>
+                        <button onclick="addSavingsGoal()" class="text-xs text-green-400 hover:text-green-300 flex items-center gap-1">
+                            <i data-lucide="plus" class="w-3 h-3"></i> Add Goal
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-slate-300">${state.data.savingsGoalName || 'Primary Savings Goal'}</span>
+                                <span class="text-white font-bold">${currency}${savingsMonthly.toLocaleString()}/mo</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-slate-400 mb-1">
+                                <span>Target: ${currency}${state.data.savingsTarget.toLocaleString()}</span>
+                                <span>${state.data.savingsMonths} months</span>
+                            </div>
+                            <div class="w-full bg-white/10 rounded-full h-2">
+                                <div class="bg-green-400 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
                         </div>
+                        ${state.data.additionalSavingsGoals && state.data.additionalSavingsGoals.map(goal => `
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-slate-300">${goal.name}</span>
+                                <span class="text-white font-bold">${currency}${goal.monthlyAmount.toLocaleString()}/mo</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-slate-400 mb-1">
+                                <span>Target: ${currency}${goal.target.toLocaleString()}</span>
+                                <span>${goal.months} months</span>
+                            </div>
+                            <div class="w-full bg-white/10 rounded-full h-2">
+                                <div class="bg-green-400 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        `).join('')}
                     </div>
                 </div>
             </div>
@@ -1810,4 +1852,31 @@ window.logout = () => {
 
     // Redirect to welcome page
     renderStep();
+};
+
+// Add Savings Goal Function
+window.addSavingsGoal = () => {
+    const goalName = prompt('Enter savings goal name (e.g., "Vacation", "New Car", "House Down Payment"):');
+    if (!goalName) return;
+
+    const targetAmount = prompt(`Enter target amount for "${goalName}" (${state.data.currency}):`);
+    if (!targetAmount || isNaN(targetAmount)) return;
+
+    const months = prompt(`How many months to reach this goal?`);
+    if (!months || isNaN(months)) return;
+
+    const newGoal = {
+        name: goalName,
+        target: parseFloat(targetAmount),
+        months: parseInt(months),
+        monthlyAmount: Math.round(parseFloat(targetAmount) / parseInt(months))
+    };
+
+    state.data.additionalSavingsGoals.push(newGoal);
+    saveUserData();
+
+    // Re-render dashboard
+    contentArea.innerHTML = renderDashboard();
+    lucide.createIcons();
+    initMap();
 };
