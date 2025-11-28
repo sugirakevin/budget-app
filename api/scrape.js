@@ -364,18 +364,73 @@ async function getGroceryPrices(city, country, selectedItems = []) {
     }
 }
 
-async function getGasPrice(countryName) {
-    const cacheKey = `gas_${countryName}`;
+const EXA_API_KEY = 'ddc94469-f902-4275-ae3c-44a2761bee87';
+
+async function getGasPriceFromExa(city, countryName) {
+    const cacheKey = `gas_exa_${countryName}_${city || 'general'}`;
     const cached = getFromCache(cacheKey);
     if (cached) return cached;
 
-    // Mock implementation for now as GlobalPetrolPrices requires paid API or complex scraping
-    // We will use our mock data but simulate a fetch
-    console.log(`Fetching gas prices for ${countryName}...`);
-    await delay(500); // Simulate network delay
+    try {
+        console.log(`🔍 Exa.ai: Searching for gas prices in ${city}, ${countryName}...`);
 
-    // In a real app, we would scrape or use an API here
-    // For now, return null to trigger fallback or use a static map
+        // 1. Search for recent gas price news/data
+        const query = `current price of 1 liter of gasoline in ${city} ${countryName} ${new Date().getFullYear()}`;
+
+        const response = await axios.post(
+            'https://api.exa.ai/search',
+            {
+                query: query,
+                numResults: 3,
+                useAutoprompt: true,
+                contents: {
+                    text: true,
+                    highlights: {
+                        numSentences: 2,
+                        query: "price of gasoline liter"
+                    }
+                }
+            },
+            {
+                headers: {
+                    'x-api-key': EXA_API_KEY,
+                    'Content-Type': 'application/json'
+                },
+                timeout: 10000
+            }
+        );
+
+        const results = response.data.results;
+        if (!results || results.length === 0) return null;
+
+        // 2. Try to extract a price from the text
+        // Regex to look for currency-like numbers (e.g., $1.50, 35.50 CZK, 1.50 EUR)
+        // This is a simple heuristic and might need refinement
+        let foundPrice = null;
+
+        for (const result of results) {
+            const text = (result.highlights && result.highlights[0]) || result.text || '';
+            console.log(`   📄 Checking result: ${result.title}`);
+
+            // Look for patterns like "1.50 EUR", "$1.50", "35 CZK"
+            // We prioritize the currency of the country if possible, but for now just look for numbers near "gas" or "petrol"
+            const priceMatch = text.match(/(\d+[.,]\d{2})\s?(EUR|USD|CZK|GBP|\$|€|Kč)/i);
+
+            if (priceMatch) {
+                foundPrice = parseFloat(priceMatch[1].replace(',', '.'));
+                console.log(`   💰 Found price: ${foundPrice} (from text: "${priceMatch[0]}")`);
+                break;
+            }
+        }
+
+        if (foundPrice) {
+            saveToCache(cacheKey, foundPrice);
+            return foundPrice;
+        }
+
+    } catch (error) {
+        console.warn("Exa.ai Gas Search failed:", error.message);
+    }
     return null;
 }
 
@@ -396,9 +451,16 @@ module.exports = async (req, res) => {
     };
 
     try {
-        // 1. Scrape Gas Prices (GlobalPetrolPrices)
-        const gasPrice = await getGasPrice(countryName);
-        if (gasPrice) result.gasPrice = gasPrice;
+        // 1. Scrape Gas Prices (Exa.ai -> Fallback)
+        const gasPrice = await getGasPriceFromExa(city, countryName);
+        if (gasPrice) {
+            result.gasPrice = gasPrice;
+            result.gasSource = 'exa_ai';
+        } else {
+            // Fallback to Mock if Exa fails
+            result.gasPrice = MOCK_GAS_PRICES[countryCode] || MOCK_GAS_PRICES['default'];
+            result.gasSource = 'fallback_mock';
+        }
 
         // 2. Scrape Transport Prices (Numbeo or PID)
         if (city) {
@@ -415,11 +477,11 @@ module.exports = async (req, res) => {
             // Calculate grocery multiplier based on store tiers
             result.groceryMultiplier = calculateStoreMultiplier(stores);
 
-            await delay(2000); // 2s delay
+            await delay(1000);
             const gasStations = await getNearbyGasStations(parseFloat(lat), parseFloat(lon));
             result.nearbyGasStations = gasStations;
 
-            await delay(2000); // 2s delay
+            await delay(1000);
             const petStores = await getNearbyPetStores(parseFloat(lat), parseFloat(lon));
             result.nearbyPetStores = petStores;
         }
@@ -443,10 +505,10 @@ module.exports = async (req, res) => {
         console.error('Scrape Error:', error.message);
     }
 
-    // Fallback for Gas
+    // Final Fallback for Gas if everything failed (should be covered above, but safety check)
     if (!result.gasPrice) {
         result.gasPrice = MOCK_GAS_PRICES[countryCode] || MOCK_GAS_PRICES['default'];
-        result.gasSource = 'fallback';
+        result.gasSource = 'fallback_final';
     }
 
     res.json(result);
