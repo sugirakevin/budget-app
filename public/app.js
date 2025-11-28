@@ -1193,24 +1193,59 @@ function renderDashboard() {
                 <div class="p-4 rounded-xl bg-white/5 border border-white/10">
                     <h3 class="font-semibold text-slate-300 mb-3">Fixed Costs</h3>
                     <div class="space-y-2">
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Rent/Mortgage</span>
+                        ${(() => {
+            // Calculate budget status for each expense
+            const getBudgetStatus = (amount, recommendedPercent) => {
+                const recommended = income * recommendedPercent;
+                const threshold90 = recommended * 0.9; // 90% of recommended
+
+                if (amount <= threshold90) {
+                    return { color: 'green', icon: '●', label: 'In budget' };
+                } else if (amount <= recommended) {
+                    return { color: 'yellow', icon: '●', label: 'Close to limit' };
+                } else {
+                    return { color: 'red', icon: '●', label: 'Over budget' };
+                }
+            };
+
+            const rentStatus = getBudgetStatus(rent, 0.30); // 30% for housing
+            const utilitiesStatus = getBudgetStatus(utilities, 0.07); // 7% for internet + phone
+            const transportStatus = getBudgetStatus(transport, 0.10); // 10% for transport
+            const loanStatus = getBudgetStatus(loanCost, 0.15); // 15% for debt
+
+            return `
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-${rentStatus.color}-400 text-lg">${rentStatus.icon}</span>
+                                <span class="text-slate-400">Rent/Mortgage</span>
+                            </div>
                             <span class="text-white font-bold">${currency}${rent.toLocaleString()}</span>
                         </div>
                         ${utilities > 0 ? `
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Internet & Phone</span>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-${utilitiesStatus.color}-400 text-lg">${utilitiesStatus.icon}</span>
+                                <span class="text-slate-400">Internet & Phone</span>
+                            </div>
                             <span class="text-white font-bold">${currency}${utilities.toLocaleString()}</span>
                         </div>
                         ` : ''}
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Transport (${transportMode})</span>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-${transportStatus.color}-400 text-lg">${transportStatus.icon}</span>
+                                <span class="text-slate-400">Transport (${transportMode})</span>
+                            </div>
                             <span class="text-white font-bold">${currency}${transport.toLocaleString()}</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Loan Repayments</span>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-${loanStatus.color}-400 text-lg">${loanStatus.icon}</span>
+                                <span class="text-slate-400">Loan Repayments</span>
+                            </div>
                             <span class="text-white font-bold">${currency}${loanCost.toLocaleString()}</span>
                         </div>
+                            `;
+        })()}
                         ${lifestyleCost > 0 ? `
                         <div class="flex justify-between items-center">
                             <div>
