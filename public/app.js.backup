@@ -1189,81 +1189,6 @@ function renderDashboard() {
 
 
                 </div>
-
-                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                    <h3 class="font-semibold text-slate-300 mb-3">Fixed Costs</h3>
-                    <div class="space-y-2">
-                        ${(() => {
-            // Calculate budget status for each expense
-            const getBudgetStatus = (amount, recommendedPercent) => {
-                const recommended = income * recommendedPercent;
-                const threshold90 = recommended * 0.9;
-
-                if (amount <= threshold90) {
-                    return { color: 'green', icon: '●', label: 'In budget' };
-                } else if (amount <= recommended) {
-                    return { color: 'yellow', icon: '●', label: 'Close to limit' };
-                } else {
-                    return { color: 'red', icon: '●', label: 'Over budget' };
-                }
-            };
-
-            const rentStatus = getBudgetStatus(rent, 0.30);
-            const utilitiesStatus = getBudgetStatus(utilities, 0.07);
-            const transportStatus = getBudgetStatus(transport, 0.10);
-            const loanStatus = getBudgetStatus(loanCost, 0.15);
-
-            return `
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <div class="flex flex-col items-center">
-                                    <span class="text-${rentStatus.color}-400 text-lg leading-none">${rentStatus.icon}</span>
-                                    <span class="text-[9px] text-${rentStatus.color}-400 leading-tight">${rentStatus.label}</span>
-                                </div>
-                                <span class="text-slate-400">Rent/Mortgage</span>
-                            </div>
-                            <span class="text-white font-bold">${currency}${rent.toLocaleString()}</span>
-                        </div>
-                        ${utilities > 0 ? `
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <div class="flex flex-col items-center">
-                                    <span class="text-${utilitiesStatus.color}-400 text-lg leading-none">${utilitiesStatus.icon}</span>
-                                    <span class="text-[9px] text-${utilitiesStatus.color}-400 leading-tight">${utilitiesStatus.label}</span>
-                                </div>
-                                <span class="text-slate-400">Internet & Phone</span>
-                            </div>
-                            <span class="text-white font-bold">${currency}${utilities.toLocaleString()}</span>
-                        </div>
-                        ` : ''}
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <div class="flex flex-col items-center">
-                                    <span class="text-${transportStatus.color}-400 text-lg leading-none">${transportStatus.icon}</span>
-                                    <span class="text-[9px] text-${transportStatus.color}-400 leading-tight">${transportStatus.label}</span>
-                                </div>
-                                <span class="text-slate-400">Transport (${transportMode})</span>
-                            </div>
-                            <span class="text-white font-bold">${currency}${transport.toLocaleString()}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <div class="flex flex-col items-center">
-                                    <span class="text-${loanStatus.color}-400 text-lg leading-none">${loanStatus.icon}</span>
-                                    <span class="text-[9px] text-${loanStatus.color}-400 leading-tight">${loanStatus.label}</span>
-                                </div>
-                                <span class="text-slate-400">Loan Repayments</span>
-                            </div>
-                            <span class="text-white font-bold">${currency}${loanCost.toLocaleString()}</span>
-                        </div>
-                            `;
-        })()}
-                        ${lifestyleCost > 0 ? `
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <span class="text-slate-400">Lifestyle & Subs</span>
-                                ${lifestyleCost > recommendedLifestyle ?
-                `<span class="block text-[10px] text-orange-400">⚠️ Over recommended (${currency}${recommendedLifestyle})</span>` :
                 `<span class="block text-[10px] text-green-400">✅ Within budget</span>`}
                             </div>
                             <span class="text-white font-bold">${currency}${lifestyleCost.toLocaleString()}</span>
@@ -1273,7 +1198,7 @@ function renderDashboard() {
                             <span class="text-slate-400">Savings Goal</span>
                             <span class="text-white font-bold">${currency}${savingsMonthly.toLocaleString()}</span>
                         </div>
-                    </div>
+                    </div >
                 </div>
             </div>
         </div>
