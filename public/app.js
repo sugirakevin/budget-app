@@ -438,14 +438,41 @@ const steps = [
     {
         id: 6,
         title: "Bills & Debt",
-        render: () => `
+        render: () => {
+            // Calculate budget recommendations based on 50/30/20 rule
+            // 50% of income for "Needs" (Rent, Bills, Debt)
+            // We'll suggest Internet + Phone should be ~5-8% of income
+            // And Loans should ideally be under 15% of income
+            const monthlyIncome = state.data.income || 0;
+            const suggestedInternet = Math.round(monthlyIncome * 0.04); // 4% for internet
+            const suggestedMobile = Math.round(monthlyIncome * 0.03); // 3% for phone
+            const suggestedLoansMax = Math.round(monthlyIncome * 0.15); // Max 15% for debt
+
+            return `
             <div class="space-y-6 animate-fade-in">
                 <h2 class="text-3xl font-bold text-white">Bills & Debt</h2>
                 <p class="text-slate-400">Recurring monthly expenses.</p>
                 
+                ${monthlyIncome > 0 ? `
+                <div class="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-semibold text-purple-300">Smart Budget Guide</h3>
+                        <span class="text-xs text-purple-400">Based on your income</span>
+                    </div>
+                    <p class="text-sm text-slate-300">
+                        For your income of <span class="font-bold text-white">${state.data.currency}${monthlyIncome.toLocaleString()}</span>, 
+                        we recommend keeping bills under <span class="font-bold text-purple-300">${state.data.currency}${(suggestedInternet + suggestedMobile).toLocaleString()}</span>/mo 
+                        and debt payments under <span class="font-bold text-purple-300">${state.data.currency}${suggestedLoansMax.toLocaleString()}</span>/mo.
+                    </p>
+                </div>
+                ` : ''}
+                
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm text-slate-400 mb-2">Home Internet (Monthly)</label>
+                        <label class="block text-sm text-slate-400 mb-2 flex justify-between">
+                            <span>Home Internet (Monthly)</span>
+                            ${monthlyIncome > 0 ? `<span class="text-xs text-blue-400">Suggested: ${state.data.currency}${suggestedInternet}</span>` : ''}
+                        </label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">${state.data.currency}</span>
                             <input type="number" id="input-internet" value="${state.data.internetCost || ''}" 
@@ -454,7 +481,10 @@ const steps = [
                     </div>
 
                     <div>
-                        <label class="block text-sm text-slate-400 mb-2">Mobile Phone (Monthly)</label>
+                        <label class="block text-sm text-slate-400 mb-2 flex justify-between">
+                            <span>Mobile Phone (Monthly)</span>
+                            ${monthlyIncome > 0 ? `<span class="text-xs text-blue-400">Suggested: ${state.data.currency}${suggestedMobile}</span>` : ''}
+                        </label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">${state.data.currency}</span>
                             <input type="number" id="input-mobile" value="${state.data.mobileCost || ''}" 
@@ -463,7 +493,10 @@ const steps = [
                     </div>
 
                     <div>
-                        <label class="block text-sm text-slate-400 mb-2">Loan Repayments (Monthly)</label>
+                        <label class="block text-sm text-slate-400 mb-2 flex justify-between">
+                            <span>Loan Repayments (Monthly)</span>
+                            ${monthlyIncome > 0 ? `<span class="text-xs text-orange-400">Max recommended: ${state.data.currency}${suggestedLoansMax}</span>` : ''}
+                        </label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">${state.data.currency}</span>
                             <input type="number" id="input-loans" value="${state.data.loans || ''}" 
@@ -472,7 +505,8 @@ const steps = [
                     </div>
                 </div>
             </div>
-        `,
+        `;
+        },
         validate: () => {
             state.data.internetCost = parseFloat(document.getElementById('input-internet').value) || 0;
             state.data.mobileCost = parseFloat(document.getElementById('input-mobile').value) || 0;
