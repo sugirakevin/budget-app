@@ -920,7 +920,7 @@ async function performAnalysis() {
         // 2. Scrape Data (Store Prices, Gas, Transport, Utilities)
         status.innerText = "Scanning local prices (Groceries, Gas, Transport, Utilities)...";
         console.log('Selected grocery items:', state.data.groceryItems);
-        const scrapeUrl = `http://localhost:3001/api/scrape?lat=${state.data.lat}&lon=${state.data.lon}&country=${state.data.countryCode}&city=${state.data.city}&items=${state.data.groceryItems.join(',')}`;
+        const scrapeUrl = `/api/scrape?lat=${state.data.lat}&lon=${state.data.lon}&country=${state.data.countryCode}&city=${state.data.city}&items=${state.data.groceryItems.join(',')}`;
         console.log('Scrape URL:', scrapeUrl);
         const scrapeRes = await fetch(scrapeUrl);
         const scrapeData = await scrapeRes.json();
