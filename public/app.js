@@ -21,8 +21,8 @@ const state = {
         adults: 1,
         kids: 0,
         pets: { dog: false, cat: false },
-        internet: false,
-        mobileCount: 1,
+        internetCost: 0,
+        mobileCost: 0,
         loans: 0,
         groceryItems: ['milk', 'bread', 'eggs', 'cheese', 'chicken', 'apples', 'banana', 'potato', 'water'],
         lifestyle: {
@@ -444,16 +444,22 @@ const steps = [
                 <p class="text-slate-400">Recurring monthly expenses.</p>
                 
                 <div class="space-y-4">
-                    <button id="btn-internet" onclick="toggleInternet()" 
-                        class="w-full p-4 rounded-xl border ${state.data.internet ? 'bg-blue-500/20 border-blue-500' : 'border-white/10'} transition-all flex items-center justify-between">
-                        <span class="flex items-center gap-2"><i data-lucide="wifi" class="w-5 h-5"></i> Home Internet</span>
-                        <span class="text-sm text-slate-400">Auto-calculated</span>
-                    </button>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2">Home Internet (Monthly)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">${state.data.currency}</span>
+                            <input type="number" id="input-internet" value="${state.data.internetCost || ''}" 
+                                class="input-field w-full p-4 pl-12 rounded-xl text-xl" placeholder="0">
+                        </div>
+                    </div>
 
                     <div>
-                        <label class="block text-sm text-slate-400 mb-2">Mobile Phone Plans</label>
-                        <input type="number" id="input-mobile" value="${state.data.mobileCount}" min="0"
-                            class="input-field w-full p-4 rounded-xl text-xl" placeholder="Number of lines">
+                        <label class="block text-sm text-slate-400 mb-2">Mobile Phone (Monthly)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">${state.data.currency}</span>
+                            <input type="number" id="input-mobile" value="${state.data.mobileCost || ''}" 
+                                class="input-field w-full p-4 pl-12 rounded-xl text-xl" placeholder="0">
+                        </div>
                     </div>
 
                     <div>
@@ -468,7 +474,8 @@ const steps = [
             </div>
         `,
         validate: () => {
-            state.data.mobileCount = parseInt(document.getElementById('input-mobile').value) || 0;
+            state.data.internetCost = parseFloat(document.getElementById('input-internet').value) || 0;
+            state.data.mobileCost = parseFloat(document.getElementById('input-mobile').value) || 0;
             state.data.loans = parseFloat(document.getElementById('input-loans').value) || 0;
             return true;
         }
@@ -974,21 +981,8 @@ async function performAnalysis() {
         state.estimates.groceries = monthlyGroceryCost;
         state.estimates.nearbyPetStores = scrapeData.nearbyPetStores || [];
 
-        // Utilities & Bills
-        let utilityCost = 0;
-
-        if (state.data.internet) {
-            const internetItem = state.estimates.scrapedProducts.find(p => p.name.includes('Internet'));
-            utilityCost += internetItem ? internetItem.price : 50;
-        }
-
-        if (state.data.mobileCount > 0) {
-            const phoneItem = state.estimates.scrapedProducts.find(p => p.name.includes('Phone'));
-            const phonePrice = phoneItem ? phoneItem.price : 30;
-            utilityCost += phonePrice * state.data.mobileCount;
-        }
-
-        state.estimates.utilities = Math.round(utilityCost);
+        // Utilities & Bills - Use user-provided costs directly
+        state.estimates.utilities = Math.round(state.data.internetCost + state.data.mobileCost);
 
         // Pets
         const countryData = COUNTRIES.find(c => c.code === state.data.countryCode);
