@@ -2031,7 +2031,7 @@ async function loadUserData() {
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', async () => {
-    contentArea = document.getElementById('content-area');
+    contentArea = document.getElementById('app-content');
     btnNext = document.getElementById('btn-next');
     btnBack = document.getElementById('btn-back');
     stepIndicator = document.getElementById('step-indicator');
