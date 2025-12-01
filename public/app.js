@@ -1611,9 +1611,9 @@ window.handleAuth = async (e) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        // Hide auth modal, show app
-        document.getElementById('auth-modal').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
+        // Hide auth modal
+        const authModal = document.getElementById('auth-modal');
+        if (authModal) authModal.classList.add('hidden');
 
         // Load saved data if available
         await loadUserData();
@@ -2039,9 +2039,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
     const token = localStorage.getItem('token');
     if (token) {
-        // Hide auth modal, show app
-        document.getElementById('auth-modal').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
+        // Hide auth modal if it exists
+        const authModal = document.getElementById('auth-modal');
+        if (authModal) authModal.classList.add('hidden');
 
         // Load saved data
         await loadUserData();
@@ -2049,19 +2049,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Render current step
         renderStep();
     } else {
-        // Show auth modal
-        document.getElementById('auth-modal').classList.remove('hidden');
-        document.getElementById('app-container').classList.add('hidden');
+        // Show auth modal if it exists
+        const authModal = document.getElementById('auth-modal');
+        if (authModal) authModal.classList.remove('hidden');
     }
 
     // Event Listeners
-    btnNext.addEventListener('click', nextStep);
-    btnBack.addEventListener('click', prevStep);
-
+    if (btnNext) btnNext.addEventListener('click', nextStep);
+    if (btnBack) btnBack.addEventListener('click', prevStep);
 
     lucide.createIcons();
 });
-
 
 // Logout Function
 window.logout = () => {
