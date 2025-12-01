@@ -1607,15 +1607,19 @@ window.handleAuth = async (e) => {
 
         if (!res.ok) throw new Error(data.error || 'Authentication failed');
 
-        // Success
-        localStorage.setItem('budget_token', data.token);
-        localStorage.setItem('budget_user', JSON.stringify(data.user));
+        // Success - Store token
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
 
-        updateAuthUI(data.user);
-        toggleAuthModal();
+        // Hide auth modal, show app
+        document.getElementById('auth-modal').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
 
         // Load saved data if available
         await loadUserData();
+
+        // Render current step
+        renderStep();
 
     } catch (err) {
         errorDiv.innerText = err.message;
@@ -2054,5 +2058,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnNext.addEventListener('click', nextStep);
     btnBack.addEventListener('click', prevStep);
 
+
     lucide.createIcons();
 });
+
+
+// Logout Function
+window.logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    location.reload();
+};
+
+// Restart Wizard Function
+window.restartWizard = () => {
+    state.step = 0;
+    renderStep();
+};
