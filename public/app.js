@@ -1137,7 +1137,8 @@ function renderDashboard() {
         console.log(`  Recalculated groceries: ${state.estimates.groceries}`);
 
         // Recalculate total discretionary
-        const totalExpenses = state.data.rent + state.estimates.transport + state.estimates.groceries + (state.estimates.utilities || 0) + state.estimates.petCost + state.estimates.loanCost + state.estimates.lifestyleCost + state.estimates.savings;
+        const additionalSavings = (state.data.additionalSavingsGoals || []).reduce((sum, goal) => sum + goal.monthlyAmount, 0);
+        const totalExpenses = state.data.rent + state.estimates.transport + state.estimates.groceries + (state.estimates.utilities || 0) + state.estimates.petCost + state.estimates.loanCost + state.estimates.lifestyleCost + state.estimates.savings + additionalSavings;
         state.estimates.discretionary = Math.round(state.data.income - totalExpenses);
 
         // Save the corrected estimates
