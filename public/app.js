@@ -1988,7 +1988,7 @@ async function saveUserData() {
     if (!token) return;
 
     try {
-        await fetch('/api/save-budget', {
+        await fetch('/api/budget', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2010,7 +2010,7 @@ async function loadUserData() {
     if (!token) return false;
 
     try {
-        const res = await fetch('/api/get-budget', {
+        const res = await fetch('/api/budget', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
