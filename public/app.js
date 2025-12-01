@@ -1620,6 +1620,11 @@ window.handleAuth = async (e) => {
         // Load saved data if available
         await loadUserData();
 
+        // If new user (step 0), advance to step 1
+        if (state.step === 0) {
+            state.step = 1;
+        }
+
         // Render current step
         renderStep();
 
@@ -2047,6 +2052,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Load saved data
         await loadUserData();
+
+        // If logged in but at step 0, go to step 1
+        if (state.step === 0) {
+            state.step = 1;
+        }
 
         // Render current step
         renderStep();
