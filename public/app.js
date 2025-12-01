@@ -1975,3 +1975,84 @@ window.addGoalInputStep = () => {
     container.appendChild(div);
     lucide.createIcons();
 };
+
+// Save/Load User Data
+async function saveUserData() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        await fetch('/api/save-budget', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                step: state.step,
+                data: state.data,
+                estimates: state.estimates
+            })
+        });
+    } catch (error) {
+        console.error('Failed to save data:', error);
+    }
+}
+
+async function loadUserData() {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+
+    try {
+        const res = await fetch('/api/get-budget', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (res.ok) {
+            const saved = await res.json();
+            if (saved.step !== undefined) {
+                state.step = saved.step;
+                state.data = { ...state.data, ...saved.data };
+                state.estimates = { ...state.estimates, ...saved.estimates };
+                return true;
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load data:', error);
+    }
+    return false;
+}
+
+// Initialize App
+document.addEventListener('DOMContentLoaded', async () => {
+    contentArea = document.getElementById('content-area');
+    btnNext = document.getElementById('btn-next');
+    btnBack = document.getElementById('btn-back');
+    stepIndicator = document.getElementById('step-indicator');
+
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+        // Hide auth modal, show app
+        document.getElementById('auth-modal').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+
+        // Load saved data
+        await loadUserData();
+
+        // Render current step
+        renderStep();
+    } else {
+        // Show auth modal
+        document.getElementById('auth-modal').classList.remove('hidden');
+        document.getElementById('app-container').classList.add('hidden');
+    }
+
+    // Event Listeners
+    btnNext.addEventListener('click', nextStep);
+    btnBack.addEventListener('click', prevStep);
+
+    lucide.createIcons();
+});
