@@ -1619,11 +1619,17 @@ window.handleAuth = async (e) => {
 
         // Load saved data if available
         await loadUserData();
+        console.log('🔍 handleAuth: state.step after load:', state.step, typeof state.step);
 
         // If new user (step 0), advance to step 1
         if (state.step === 0) {
+            console.log('🔍 handleAuth: advancing to step 1');
             state.step = 1;
+        } else {
+            console.log('🔍 handleAuth: NOT advancing, condition failed');
         }
+
+        console.log('🔍 handleAuth: state.step before render:', state.step);
 
         // Render current step
         renderStep();
@@ -2023,6 +2029,7 @@ async function loadUserData() {
 
         if (res.ok) {
             const saved = await res.json();
+            console.log('🔍 loadUserData: saved data:', saved);
             if (saved.step !== undefined) {
                 state.step = saved.step;
                 state.data = { ...state.data, ...saved.data };
