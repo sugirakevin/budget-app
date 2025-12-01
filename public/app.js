@@ -669,39 +669,100 @@ const steps = [
     },
     {
         id: 9,
-        title: "Savings Goal",
-        render: () => `
-            <div class="space-y-6 animate-fade-in">
-                <h2 class="text-3xl font-bold text-white">What is your Goal?</h2>
-                <p class="text-slate-400">We'll calculate how much you need to save monthly.</p>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-2">Total Amount to Save</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">${state.data.currency}</span>
-                            <input type="number" id="input-savings-target" value="${state.data.savingsTarget || ''}" 
-                                class="input-field w-full p-4 pl-12 rounded-xl text-2xl font-bold" placeholder="60000">
+        title: "Savings Goals",
+        render: () => {
+            let additionalGoalsHtml = '';
+            if (state.data.additionalSavingsGoals && state.data.additionalSavingsGoals.length > 0) {
+                additionalGoalsHtml = state.data.additionalSavingsGoals.map((goal, index) => `
+                    <div class="goal-item bg-white/5 p-4 rounded-xl space-y-3 border border-white/10 animate-fade-in mt-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-sm font-semibold text-blue-300">Goal ${index + 2}</h3>
+                            <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-300">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Goal Name</label>
+                            <input type="text" class="goal-name input-field w-full p-2 rounded-lg text-sm" placeholder="e.g. Vacation" value="${goal.name}">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Amount (${state.data.currency})</label>
+                                <input type="number" class="goal-target input-field w-full p-2 rounded-lg text-sm" placeholder="5000" value="${goal.target}">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Months</label>
+                                <input type="number" class="goal-months input-field w-full p-2 rounded-lg text-sm" placeholder="12" value="${goal.months}">
+                            </div>
                         </div>
                     </div>
+                `).join('');
+            }
 
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-2">Timeframe (Months)</label>
-                        <input type="number" id="input-savings-months" value="${state.data.savingsMonths || ''}" 
-                            class="input-field w-full p-4 rounded-xl text-xl" placeholder="6">
+            return `
+            <div class="space-y-6 animate-fade-in">
+                <h2 class="text-3xl font-bold text-white">What are your Goals?</h2>
+                <p class="text-slate-400">We'll calculate how much you need to save monthly for each goal.</p>
+                
+                <div id="goals-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                    <!-- Primary Goal -->
+                    <div class="goal-item bg-white/5 p-4 rounded-xl space-y-3 border border-white/10">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-sm font-semibold text-blue-300">Primary Goal</h3>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Goal Name</label>
+                            <input type="text" class="goal-name input-field w-full p-2 rounded-lg text-sm" placeholder="e.g. Emergency Fund" value="${state.data.savingsGoalName || ''}">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Amount (${state.data.currency})</label>
+                                <input type="number" class="goal-target input-field w-full p-2 rounded-lg text-sm" placeholder="10000" value="${state.data.savingsTarget || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Months</label>
+                                <input type="number" class="goal-months input-field w-full p-2 rounded-lg text-sm" placeholder="12" value="${state.data.savingsMonths || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Goals Container -->
+                    <div id="additional-goals-container">
+                        ${additionalGoalsHtml}
                     </div>
                 </div>
+
+                <button onclick="addGoalInputStep()" class="w-full py-3 rounded-xl border-2 border-dashed border-white/20 text-slate-400 hover:border-white/40 hover:text-white transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add Another Goal
+                </button>
             </div>
-        `,
+            `;
+        },
         validate: () => {
-            const target = parseFloat(document.getElementById('input-savings-target').value);
-            const months = parseFloat(document.getElementById('input-savings-months').value);
+            const names = document.querySelectorAll('.goal-name');
+            const targets = document.querySelectorAll('.goal-target');
+            const months = document.querySelectorAll('.goal-months');
 
-            if (!target || target <= 0) return false;
-            if (!months || months <= 0) return false;
+            // Validate Primary Goal
+            if (!targets[0].value || !months[0].value) return false;
 
-            state.data.savingsTarget = target;
-            state.data.savingsMonths = months;
+            // Save Primary
+            state.data.savingsGoalName = names[0].value || 'Primary Goal';
+            state.data.savingsTarget = parseFloat(targets[0].value);
+            state.data.savingsMonths = parseFloat(months[0].value);
+
+            // Save Additional
+            state.data.additionalSavingsGoals = [];
+            for (let i = 1; i < targets.length; i++) {
+                if (targets[i].value && months[i].value) {
+                    state.data.additionalSavingsGoals.push({
+                        name: names[i].value || `Goal ${i + 1}`,
+                        target: parseFloat(targets[i].value),
+                        months: parseFloat(months[i].value),
+                        monthlyAmount: Math.round(parseFloat(targets[i].value) / parseFloat(months[i].value))
+                    });
+                }
+            }
             return true;
         }
     },
@@ -1879,4 +1940,37 @@ window.addSavingsGoal = () => {
     contentArea.innerHTML = renderDashboard();
     lucide.createIcons();
     initMap();
+};
+
+// Add Goal Input in Step 9
+window.addGoalInputStep = () => {
+    const container = document.getElementById('additional-goals-container');
+    const count = document.querySelectorAll('.goal-item').length + 1;
+
+    const div = document.createElement('div');
+    div.className = 'goal-item bg-white/5 p-4 rounded-xl space-y-3 border border-white/10 animate-fade-in mt-4';
+    div.innerHTML = `
+        <div class="flex justify-between items-center">
+            <h3 class="text-sm font-semibold text-blue-300">Goal ${count}</h3>
+            <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-300">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div>
+            <label class="block text-xs text-slate-400 mb-1">Goal Name</label>
+            <input type="text" class="goal-name input-field w-full p-2 rounded-lg text-sm" placeholder="e.g. Vacation">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Amount (${state.data.currency})</label>
+                <input type="number" class="goal-target input-field w-full p-2 rounded-lg text-sm" placeholder="5000">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Months</label>
+                <input type="number" class="goal-months input-field w-full p-2 rounded-lg text-sm" placeholder="12">
+            </div>
+        </div>
+    `;
+    container.appendChild(div);
+    lucide.createIcons();
 };
