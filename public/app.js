@@ -1148,7 +1148,9 @@ function renderDashboard() {
     const { income, currency, rent } = state.data;
     const { transport, transportMode, groceries, discretionary, nearbyStores, utilities, petCost, loanCost, lifestyleCost, recommendedLifestyle } = state.estimates;
     const isPositive = discretionary >= 0;
-    const savingsMonthly = Math.round(state.data.savingsTarget / state.data.savingsMonths);
+    const savingsTarget = state.data.savingsTarget || 0;
+    const savingsMonths = state.data.savingsMonths || 1; // Avoid division by zero
+    const savingsMonthly = Math.round(savingsTarget / savingsMonths);
 
     return `
         <div class="animate-fade-in h-full flex flex-col">
@@ -1355,8 +1357,8 @@ function renderDashboard() {
                                 <span class="text-white font-bold">${currency}${savingsMonthly.toLocaleString()}/mo</span>
                             </div>
                             <div class="flex justify-between text-xs text-slate-400 mb-1">
-                                <span>Target: ${currency}${state.data.savingsTarget.toLocaleString()}</span>
-                                <span>${state.data.savingsMonths} months</span>
+                                <span>Target: ${currency}${savingsTarget.toLocaleString()}</span>
+                                <span>${savingsMonths} months</span>
                             </div>
                             <div class="w-full bg-white/10 rounded-full h-2">
                                 <div class="bg-green-400 h-2 rounded-full" style="width: 0%"></div>
