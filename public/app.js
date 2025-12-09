@@ -10,7 +10,9 @@ const state = {
         city: '',
         zip: '',
         rent: 0,
-        transportMode: 'car', // 'car' or 'public'
+        transportModes: ['car'], // Array: ['car', 'public']
+        publicTransportPlan: 'monthly', // 'monthly', 'yearly', 'daily'
+        customTransportPrice: 0,
         carType: 'sedan',
         commuteDistance: 10,
         savingsTarget: 0,
@@ -67,26 +69,42 @@ const CAR_EFFICIENCY = {
 
 // Helper to toggle transport inputs
 window.setTransportMode = (mode) => {
-    state.data.transportMode = mode;
+    const modes = state.data.transportModes;
+    const index = modes.indexOf(mode);
+
+    if (index === -1) {
+        modes.push(mode);
+    } else {
+        // Prevent deselecting the last mode
+        if (modes.length > 1) {
+            modes.splice(index, 1);
+        }
+    }
+
+    // Update UI
     const carSection = document.getElementById('section-car');
     const publicSection = document.getElementById('section-public');
     const btnCar = document.getElementById('btn-mode-car');
     const btnPublic = document.getElementById('btn-mode-public');
 
-    if (mode === 'car') {
+    if (modes.includes('car')) {
         carSection.classList.remove('hidden');
-        publicSection.classList.add('hidden');
         btnCar.classList.add('bg-blue-500', 'text-white', 'border-transparent');
         btnCar.classList.remove('bg-white/5', 'border-white/10');
-        btnPublic.classList.remove('bg-blue-500', 'text-white', 'border-transparent');
-        btnPublic.classList.add('bg-white/5', 'border-white/10');
     } else {
         carSection.classList.add('hidden');
+        btnCar.classList.remove('bg-blue-500', 'text-white', 'border-transparent');
+        btnCar.classList.add('bg-white/5', 'border-white/10');
+    }
+
+    if (modes.includes('public')) {
         publicSection.classList.remove('hidden');
         btnPublic.classList.add('bg-blue-500', 'text-white', 'border-transparent');
         btnPublic.classList.remove('bg-white/5', 'border-white/10');
-        btnCar.classList.remove('bg-blue-500', 'text-white', 'border-transparent');
-        btnCar.classList.add('bg-white/5', 'border-white/10');
+    } else {
+        publicSection.classList.add('hidden');
+        btnPublic.classList.remove('bg-blue-500', 'text-white', 'border-transparent');
+        btnPublic.classList.add('bg-white/5', 'border-white/10');
     }
 };
 
@@ -614,23 +632,23 @@ const steps = [
         render: () => `
             <div class="space-y-6 animate-fade-in">
                 <h2 class="text-3xl font-bold text-white">How do you get around?</h2>
-                <p class="text-slate-400">Choose your primary mode of transport.</p>
+                <p class="text-slate-400">Select all modes that apply.</p>
                 
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <button id="btn-mode-car" onclick="setTransportMode('car')" 
-                        class="p-4 rounded-xl border ${state.data.transportMode === 'car' ? 'bg-blue-500 text-white border-transparent' : 'bg-white/5 border-white/10'} transition-all flex flex-col items-center gap-2">
+                        class="p-4 rounded-xl border ${state.data.transportModes.includes('car') ? 'bg-blue-500 text-white border-transparent' : 'bg-white/5 border-white/10'} transition-all flex flex-col items-center gap-2">
                         <i data-lucide="car" class="w-6 h-6"></i>
                         <span class="font-semibold">Own Car</span>
                     </button>
                     <button id="btn-mode-public" onclick="setTransportMode('public')" 
-                        class="p-4 rounded-xl border ${state.data.transportMode === 'public' ? 'bg-blue-500 text-white border-transparent' : 'bg-white/5 border-white/10'} transition-all flex flex-col items-center gap-2">
+                        class="p-4 rounded-xl border ${state.data.transportModes.includes('public') ? 'bg-blue-500 text-white border-transparent' : 'bg-white/5 border-white/10'} transition-all flex flex-col items-center gap-2">
                         <i data-lucide="bus" class="w-6 h-6"></i>
                         <span class="font-semibold">Public Transport</span>
                     </button>
                 </div>
 
                 <!--Car Section-->
-                <div id="section-car" class="${state.data.transportMode === 'car' ? '' : 'hidden'} space-y-4">
+                <div id="section-car" class="${state.data.transportModes.includes('car') ? '' : 'hidden'} space-y-4">
                     <label class="block text-sm text-slate-400">Vehicle Type</label>
                     <div class="grid grid-cols-3 gap-3">
                         ${['Sedan', 'SUV', 'Truck', 'Hybrid', 'EV'].map(type => `
@@ -648,21 +666,49 @@ const steps = [
                 </div>
 
                 <!--Public Transport Section-->
-    <div id="section-public" class="${state.data.transportMode === 'public' ? '' : 'hidden'} space-y-4">
-        <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-            <div class="flex items-start gap-3">
-                <i data-lucide="info" class="w-5 h-5 text-blue-400 mt-1"></i>
-                <div>
-                    <p class="text-sm text-blue-200">We'll scan for local public transport prices (Monthly Pass) in <strong>${state.data.city || 'your area'}</strong>.</p>
+                <div id="section-public" class="${state.data.transportModes.includes('public') ? '' : 'hidden'} space-y-4">
+                    <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-4">
+                        <div class="flex items-start gap-3">
+                            <i data-lucide="info" class="w-5 h-5 text-blue-400 mt-1"></i>
+                            <div>
+                                <p class="text-sm text-blue-200">We'll scan for local public transport prices in <strong>${state.data.city || 'your area'}</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2">Plan Type</label>
+                        <div class="relative">
+                            <select id="input-transport-plan" class="input-field w-full p-4 rounded-xl appearance-none cursor-pointer">
+                                <option value="monthly" ${state.data.publicTransportPlan === 'monthly' ? 'selected' : ''}>Monthly Pass</option>
+                                <option value="yearly" ${state.data.publicTransportPlan === 'yearly' ? 'selected' : ''}>Yearly Pass</option>
+                                <option value="daily" ${state.data.publicTransportPlan === 'daily' ? 'selected' : ''}>Daily Commute (2 tickets/day)</option>
+                            </select>
+                            <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <i data-lucide="chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2">Custom Price (Optional Override)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">${state.data.currency}</span>
+                            <input type="number" id="input-transport-price" value="${state.data.customTransportPrice || ''}" 
+                                class="input-field w-full p-4 pl-12 rounded-xl text-xl" placeholder="Auto-detected">
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">Leave empty to use auto-detected price.</p>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
             </div>
         `,
         validate: () => {
-            if (state.data.transportMode === 'car') {
+            if (state.data.transportModes.includes('car')) {
                 state.data.commuteDistance = parseFloat(document.getElementById('input-commute').value) || 0;
+            }
+            if (state.data.transportModes.includes('public')) {
+                state.data.publicTransportPlan = document.getElementById('input-transport-plan').value;
+                state.data.customTransportPrice = parseFloat(document.getElementById('input-transport-price').value) || 0;
             }
             return true;
         }
@@ -1037,17 +1083,51 @@ async function performAnalysis() {
         status.innerText = "Calculating budget...";
 
         // Transport
-        if (state.data.transportMode === 'car') {
+        // Transport
+        let totalTransportCost = 0;
+        state.estimates.gasPrice = 0;
+
+        // 1. Car Cost
+        if (state.data.transportModes.includes('car')) {
             const gasPrice = scrapeData.gasPrice || 1.50; // Default fallback
             state.estimates.gasPrice = gasPrice; // Save for dashboard
             const efficiency = CAR_EFFICIENCY[state.data.carType];
             const dailyCost = (state.data.commuteDistance / efficiency) * gasPrice;
-            state.estimates.gas = Math.round(dailyCost * 30); // Monthly
-            state.estimates.transport = state.estimates.gas + 100; // + Insurance/Maintenance
-        } else {
-            state.estimates.transport = scrapeData.transportPrice || 50; // Fallback $50
-            state.estimates.gasPrice = 0;
+            const monthlyGas = Math.round(dailyCost * 30);
+            totalTransportCost += monthlyGas + 100; // + Insurance/Maintenance
+            state.estimates.gas = monthlyGas;
         }
+
+        // 2. Public Transport Cost
+        if (state.data.transportModes.includes('public')) {
+            let publicCost = 0;
+
+            // Use custom price if provided
+            if (state.data.customTransportPrice > 0) {
+                publicCost = state.data.customTransportPrice;
+            } else {
+                // Use scraped price
+                const prices = scrapeData.transportPrice;
+                if (prices && typeof prices === 'object') {
+                    // New structured format
+                    if (state.data.publicTransportPlan === 'yearly') {
+                        publicCost = Math.round((prices.monthly * 11) / 12); // Approx 1 month free/discount
+                    } else if (state.data.publicTransportPlan === 'daily') {
+                        // 2 trips per day * 20 work days
+                        publicCost = Math.round((prices.oneWay || 2) * 40);
+                    } else {
+                        // Monthly (Default)
+                        publicCost = prices.monthly || 50;
+                    }
+                } else {
+                    // Fallback or old format (just a number)
+                    publicCost = prices || 50;
+                }
+            }
+            totalTransportCost += publicCost;
+        }
+
+        state.estimates.transport = totalTransportCost;
 
         // Groceries (Calculate from real Numbeo data)
         let monthlyGroceryCost = 0;
@@ -1311,7 +1391,7 @@ function renderDashboard() {
                                     <span class="text-${transportStatus.color}-400 text-lg leading-none">${transportStatus.icon}</span>
                                     <span class="text-[9px] text-${transportStatus.color}-400 leading-tight">${transportStatus.label}</span>
                                 </div>
-                                <span class="text-slate-400">Transport (${transportMode})</span>
+                                <span class="text-slate-400">Transport (${state.data.transportModes.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(' + ')})</span>
                             </div>
                             <span class="text-white font-bold">${currency}${transport.toLocaleString()}</span>
                         </div>

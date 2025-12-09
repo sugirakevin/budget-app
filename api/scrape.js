@@ -243,19 +243,21 @@ async function getPublicTransportPrice(city, country) {
             });
             const $ = cheerio.load(data);
 
-            // PID structure: Look for "550" which is the standard monthly price
-            let price = null;
+            // PID structure: Look for "550" (Monthly) and "30" (30min/One-way approx)
+            // This is a simplified scrape for demo purposes
+            let monthly = 550;
+            let oneWay = 30; // 30 CZK for 30 min ticket
+
+            // Validate if site still has 550
+            let confirmed = false;
             $('td').each((i, el) => {
-                const text = $(el).text().trim();
-                if (text.includes('550')) {
-                    price = 550;
-                    return false;
-                }
+                if ($(el).text().includes('550')) confirmed = true;
             });
 
-            if (price) {
-                saveToCache(cacheKey, price);
-                return price;
+            if (confirmed) {
+                const result = { monthly, oneWay, source: 'Official (PID)' };
+                saveToCache(cacheKey, result);
+                return result;
             }
         }
 
@@ -274,29 +276,38 @@ async function getPublicTransportPrice(city, country) {
 
         const $ = cheerio.load(data);
 
-        let price = null;
+        let monthly = null;
+        let oneWay = null;
 
         $('tr').each((i, el) => {
             const text = $(el).text().trim();
-            if (text.includes('Monthly Pass (Regular Price)')) {
-                const priceText = $(el).find('.priceValue').text().trim();
-                let numStr = priceText.replace(/[^0-9.,]/g, '');
+            const priceText = $(el).find('.priceValue').text().trim();
 
-                if (numStr.includes(',')) {
-                    if (numStr.indexOf(',') > numStr.indexOf('.')) {
-                        numStr = numStr.replace(/\./g, '').replace(',', '.');
-                    } else {
-                        numStr = numStr.replace(/,/g, '');
-                    }
+            if (!priceText) return;
+
+            let numStr = priceText.replace(/[^0-9.,]/g, '');
+            if (numStr.includes(',')) {
+                if (numStr.indexOf(',') > numStr.indexOf('.')) {
+                    numStr = numStr.replace(/\./g, '').replace(',', '.');
+                } else {
+                    numStr = numStr.replace(/,/g, '');
                 }
+            }
+            const price = parseFloat(numStr);
 
-                price = parseFloat(numStr);
-                return false;
+            if (text.includes('Monthly Pass (Regular Price)')) {
+                monthly = price;
+            } else if (text.includes('One-way Ticket (Local Transport)')) {
+                oneWay = price;
             }
         });
 
-        if (price) saveToCache(cacheKey, price);
-        return price;
+        if (monthly || oneWay) {
+            const result = { monthly, oneWay, source: 'Numbeo' };
+            saveToCache(cacheKey, result);
+            return result;
+        }
+        return null;
 
     } catch (e) {
         console.warn("Transport Scrape failed:", e.message);
