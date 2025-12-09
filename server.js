@@ -101,10 +101,10 @@ app.post('/api/notifications/mark-read', authenticateToken, (req, res) => {
 // Budget Routes
 // Budget Routes
 app.post('/api/budget', authenticateToken, (req, res) => {
-    const { data } = req.body;
-    if (!data) return res.status(400).json({ error: "No data provided" });
+    const budgetData = req.body;
+    if (!budgetData) return res.status(400).json({ error: "No data provided" });
 
-    db.run(`UPDATE users SET budget_data = ? WHERE id = ?`, [JSON.stringify(data), req.user.id], function (err) {
+    db.run(`UPDATE users SET budget_data = ? WHERE id = ?`, [JSON.stringify(budgetData), req.user.id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: "Budget saved successfully" });
     });
@@ -122,7 +122,7 @@ app.get('/api/budget', authenticateToken, (req, res) => {
                 console.error("Error parsing budget data", e);
             }
         }
-        res.json({ data });
+        res.json(data || {});
     });
 });
 
