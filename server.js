@@ -11,7 +11,7 @@ const { startScheduler } = require('./api/scheduler');
 
 const app = express();
 const PORT = 3001;
-const SECRET_KEY = "super_secret_budget_key"; // In prod, use env var
+const SECRET_KEY = process.env.SECRET_KEY || "super_secret_budget_key";
 
 app.use(cors());
 app.use(express.json()); // Parse JSON bodies
@@ -22,6 +22,27 @@ startScheduler();
 
 // API Route
 app.get('/api/scrape', scrapeHandler);
+
+// Health Check
+app.get('/api/health', (req, res) => {
+    const dbType = process.env.DATABASE_URL || process.env.POSTGRES_URL ? 'PostgreSQL' : 'SQLite';
+
+    // Try a simple query
+    db.get("SELECT 1 as val", [], (err, row) => {
+        if (err) {
+            return res.status(500).json({
+                status: 'error',
+                database: dbType,
+                message: err.message
+            });
+        }
+        res.json({
+            status: 'ok',
+            database: dbType,
+            val: row ? row.val : null
+        });
+    });
+});
 
 // ... (Auth Routes remain the same) ...
 
