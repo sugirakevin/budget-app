@@ -1,20 +1,52 @@
 const path = require('path');
 
 // Check if running in production with PostgreSQL
-const isPostgres = !!process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+const isPostgres = !!connectionString;
 
 let db;
 
 if (isPostgres) {
     const { Pool } = require('pg');
     const pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
+        connectionString: connectionString,
         ssl: {
             rejectUnauthorized: false
         }
     });
 
     console.log('Connected to PostgreSQL database.');
+
+    // Initialize Schema
+    const initPostgresSchema = async () => {
+        try {
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    email TEXT UNIQUE NOT NULL,
+                    password TEXT NOT NULL,
+                    budget_data TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            `);
+
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS notifications (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id),
+                    message TEXT,
+                    diff_amount INTEGER,
+                    is_read BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            `);
+            console.log('✅ PostgreSQL schema initialized');
+        } catch (err) {
+            console.error('❌ Error initializing PostgreSQL schema:', err);
+        }
+    };
+
+    initPostgresSchema();
 
     // Wrapper to make PG behave like SQLite
     db = {
