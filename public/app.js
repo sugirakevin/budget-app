@@ -1694,6 +1694,9 @@ window.handleAuth = async (e) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
+        // Update UI
+        updateAuthUI();
+
         // Hide auth modal
         const authModal = document.getElementById('auth-modal');
         if (authModal) authModal.classList.add('hidden');
@@ -2117,6 +2120,32 @@ async function loadUserData() {
     return false;
 }
 
+// Update Auth UI (Header Button)
+function updateAuthUI() {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    const btnText = document.getElementById('auth-btn-text');
+    const btnTrigger = document.getElementById('btn-auth-trigger');
+    const profileEmail = document.getElementById('profile-email');
+
+    if (token && userStr) {
+        const user = JSON.parse(userStr);
+        if (btnText) btnText.innerText = "Profile";
+        if (btnTrigger) {
+            btnTrigger.onclick = toggleProfileModal;
+            btnTrigger.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i> <span id="auth-btn-text">Profile</span>`;
+        }
+        if (profileEmail) profileEmail.innerText = user.email;
+    } else {
+        if (btnText) btnText.innerText = "Login";
+        if (btnTrigger) {
+            btnTrigger.onclick = toggleAuthModal;
+            btnTrigger.innerHTML = `<i data-lucide="log-in" class="w-4 h-4"></i> <span id="auth-btn-text">Login</span>`;
+        }
+    }
+    lucide.createIcons();
+}
+
 // Initialize App
 document.addEventListener('DOMContentLoaded', async () => {
     contentArea = document.getElementById('app-content');
@@ -2126,6 +2155,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Check if user is logged in
     const token = localStorage.getItem('token');
+
+    // Update UI based on auth state
+    updateAuthUI();
+
     if (token) {
         // Hide auth modal if it exists
         const authModal = document.getElementById('auth-modal');
@@ -2161,8 +2194,15 @@ window.logout = () => {
     location.reload();
 };
 
+// Toggle Profile Modal
+window.toggleProfileModal = () => {
+    const modal = document.getElementById('profile-modal');
+    modal.classList.toggle('hidden');
+};
+
 // Restart Wizard Function
 window.restartWizard = () => {
     state.step = 0;
     renderStep();
+    toggleProfileModal(); // Close modal
 };
