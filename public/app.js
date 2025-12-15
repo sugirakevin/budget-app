@@ -2193,6 +2193,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnNext) btnNext.addEventListener('click', nextStep);
     if (btnBack) btnBack.addEventListener('click', prevStep);
 
+    // Make logo clickable to go back to landing page
+    const logoElements = document.querySelectorAll('header .flex.items-center.gap-3');
+    if (logoElements.length > 0) {
+        logoElements[0].style.cursor = 'pointer';
+        logoElements[0].addEventListener('click', () => {
+            window.location.href = 'landing.html';
+        });
+    }
+
     lucide.createIcons();
 });
 
