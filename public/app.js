@@ -2128,8 +2128,11 @@ function updateAuthUI() {
     const btnTrigger = document.getElementById('btn-auth-trigger');
     const profileEmail = document.getElementById('profile-email');
 
+    console.log('updateAuthUI called - token:', !!token, 'user:', userStr);
+
     if (token && userStr) {
         const user = JSON.parse(userStr);
+        console.log('Updating UI for logged-in user:', user.email);
         if (btnText) btnText.innerText = "Profile";
         if (btnTrigger) {
             btnTrigger.onclick = toggleProfileModal;
@@ -2137,6 +2140,7 @@ function updateAuthUI() {
         }
         if (profileEmail) profileEmail.innerText = user.email;
     } else {
+        console.log('Updating UI for logged-out state');
         if (btnText) btnText.innerText = "Login";
         if (btnTrigger) {
             btnTrigger.onclick = toggleAuthModal;
