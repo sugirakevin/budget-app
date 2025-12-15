@@ -2308,9 +2308,4 @@ window.toggleProfileModal = () => {
     modal.classList.toggle('hidden');
 };
 
-// Restart Wizard Function
-window.restartWizard = () => {
-    state.step = 0;
-    renderStep();
-    toggleProfileModal(); // Close modal
-};
+
