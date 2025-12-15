@@ -149,24 +149,39 @@ app.get('/api/budget', authenticateToken, (req, res) => {
 
 app.post('/api/change-password', authenticateToken, (req, res) => {
     const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword) {
-        return res.status(400).json({ error: "Current and new password required" });
-    }
 
-    db.get(`SELECT * FROM users WHERE id = ?`, [req.user.id], (err, user) => {
-        if (err) return res.status(500).json({ error: "Database error" });
-        if (!user) return res.status(404).json({ error: "User not found" });
+    db.get(`SELECT password FROM users WHERE id = ?`, [req.user.id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "User not found" });
 
-        const passwordIsValid = bcrypt.compareSync(currentPassword, user.password);
+        const passwordIsValid = bcrypt.compareSync(currentPassword, row.password);
         if (!passwordIsValid) return res.status(401).json({ error: "Invalid current password" });
 
-        const hashedNewPassword = bcrypt.hashSync(newPassword, 8);
-        db.run(`UPDATE users SET password = ? WHERE id = ?`, [hashedNewPassword, req.user.id], (err) => {
-            if (err) return res.status(500).json({ error: "Failed to update password" });
+        const hashedPassword = bcrypt.hashSync(newPassword, 8);
+        db.run(`UPDATE users SET password = ? WHERE id = ?`, [hashedPassword, req.user.id], (err) => {
+            if (err) return res.status(500).json({ error: err.message });
             res.json({ message: "Password updated successfully" });
         });
     });
 });
+
+// Delete Account Route
+app.delete('/api/user', authenticateToken, (req, res) => {
+    // First delete notifications
+    db.run(`DELETE FROM notifications WHERE user_id = ?`, [req.user.id], (err) => {
+        if (err) {
+            console.error("Error deleting notifications:", err);
+            // Continue anyway to delete user
+        }
+
+        // Then delete user
+        db.run(`DELETE FROM users WHERE id = ?`, [req.user.id], (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ message: "Account deleted successfully" });
+        });
+    });
+});
+
 
 // Catch-all for frontend
 app.get('*', (req, res) => {

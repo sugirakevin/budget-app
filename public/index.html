@@ -281,27 +281,33 @@
                     </form>
                 </div>
 
-                <!-- Budget Actions -->
+                <!-- Account Actions -->
                 <div class="space-y-4">
                     <h3
                         class="text-sm font-semibold text-slate-300 uppercase tracking-wide border-b border-white/10 pb-2">
-                        Budget Settings</h3>
+                        Account Actions</h3>
+
                     <button onclick="restartWizard()"
                         class="w-full p-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-xl font-semibold transition-all border border-blue-500/20 flex items-center justify-center gap-2">
-                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Restart Wizard (Edit Steps)
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Budget Data
+                    </button>
+
+                    <button onclick="logout()"
+                        class="w-full p-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-semibold transition-all border border-white/10 flex items-center justify-center gap-2">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                    </button>
+
+                    <button onclick="deleteAccount()"
+                        class="w-full p-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-semibold transition-all border border-red-500/20 flex items-center justify-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Account
                     </button>
                 </div>
-
-                <button onclick="logout()"
-                    class="w-full p-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-semibold transition-all border border-red-500/20 mt-4 flex items-center justify-center gap-2">
-                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
-                </button>
             </div>
         </div>
     </div>
 
     <script src="countries.js"></script>
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
     <script>
         lucide.createIcons();
     </script>

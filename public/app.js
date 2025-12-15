@@ -2156,8 +2156,10 @@ function updateAuthUI_v2() {
 
         if (btnTrigger) {
             btnTrigger.onclick = toggleProfileModal;
-            btnTrigger.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i> <span id="auth-btn-text">Profile</span>`;
-            console.log('✓ Updated btnTrigger HTML');
+            // Show email instead of "Profile" (truncate if too long)
+            const displayName = user.email.length > 20 ? user.email.substring(0, 18) + '...' : user.email;
+            btnTrigger.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i> <span id="auth-btn-text">${displayName}</span>`;
+            console.log('✓ Updated btnTrigger HTML with email');
         } else {
             console.error('❌ btnTrigger element not found!');
         }
@@ -2177,6 +2179,36 @@ function updateAuthUI_v2() {
 
     lucide.createIcons();
     console.log('=== END DEBUG ===');
+}
+
+// Delete Account
+async function deleteAccount() {
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/user', {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            alert('Account deleted successfully.');
+            logout();
+        } else {
+            const data = await response.json();
+            alert('Failed to delete account: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        alert('An error occurred while deleting your account.');
+    }
 }
 
 // Initialize App
