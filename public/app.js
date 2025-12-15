@@ -2123,7 +2123,7 @@ async function loadUserData() {
     return false;
 }
 
-// Update Auth UI (Header Button)
+// Update Auth UI (Header Button) - v2024-12-15
 function updateAuthUI() {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
