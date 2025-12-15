@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoBudget - Smart Location-Based Budgeting</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #38bdf8, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(56, 189, 248, 0.2);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: blob 7s infinite;
+        }
+
+        @keyframes blob {
+
+            0%,
+            100% {
+                transform: translate(0px, 0px) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+    </style>
+</head>
+
+<body class="gradient-bg min-h-screen text-white">
+    <!-- Background Blobs -->
+    <div class="blob w-96 h-96 bg-blue-500 top-0 left-0"></div>
+    <div class="blob w-96 h-96 bg-purple-500 bottom-0 right-0" style="animation-delay: 2s;"></div>
+
+    <!-- Navigation -->
+    <nav class="relative z-10 container mx-auto px-6 py-6">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-500/20 rounded-lg">
+                    <i data-lucide="wallet" class="w-8 h-8 text-blue-400"></i>
+                </div>
+                <span class="text-2xl font-bold gradient-text">GeoBudget</span>
+            </div>
+            <a href="index.html"
+                class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition-all">
+                Get Started
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative z-10 container mx-auto px-6 py-20 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-6xl md:text-7xl font-bold mb-6 leading-tight">
+                Budget Smarter with
+                <span class="gradient-text">Location Intelligence</span>
+            </h1>
+            <p class="text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
+                GeoBudget analyzes real-time local prices, transport costs, and living expenses to create a personalized
+                budget tailored to your exact location.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="index.html"
+                    class="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2">
+                    Start Your Budget <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+                <a href="#features"
+                    class="px-8 py-4 glass-card rounded-xl font-bold text-lg hover:bg-white/10 transition-all">
+                    Learn More
+                </a>
+            </div>
+        </div>
+
+        <!-- Hero Image/Illustration -->
+        <div class="mt-20 float-animation">
+            <div class="glass-card rounded-2xl p-8 max-w-3xl mx-auto">
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="glass-card rounded-xl p-4 text-center">
+                        <i data-lucide="map-pin" class="w-8 h-8 text-blue-400 mx-auto mb-2"></i>
+                        <p class="text-sm text-slate-300">Location-Based</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 text-center">
+                        <i data-lucide="trending-up" class="w-8 h-8 text-green-400 mx-auto mb-2"></i>
+                        <p class="text-sm text-slate-300">Real-Time Data</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 text-center">
+                        <i data-lucide="shield-check" class="w-8 h-8 text-purple-400 mx-auto mb-2"></i>
+                        <p class="text-sm text-slate-300">Secure & Private</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="relative z-10 container mx-auto px-6 py-20">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                Why <span class="gradient-text">GeoBudget</span>?
+            </h2>
+            <p class="text-xl text-slate-300 max-w-2xl mx-auto">
+                Traditional budgeting tools use generic estimates. We use real data from your actual location.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="feature-card glass-card rounded-2xl p-8">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6">
+                    <i data-lucide="shopping-cart" class="w-8 h-8 text-blue-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Live Grocery Prices</h3>
+                <p class="text-slate-300">
+                    We scan real prices from Numbeo and local stores near you, so your grocery budget reflects actual
+                    costs, not guesses.
+                </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="feature-card glass-card rounded-2xl p-8">
+                <div class="w-16 h-16 bg-purple-500/20 rounded-xl flex items-center justify-center mb-6">
+                    <i data-lucide="car" class="w-8 h-8 text-purple-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Smart Transport Analysis</h3>
+                <p class="text-slate-300">
+                    Choose between car, public transport, or both. We calculate gas prices and transit passes based on
+                    your city.
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="feature-card glass-card rounded-2xl p-8">
+                <div class="w-16 h-16 bg-green-500/20 rounded-xl flex items-center justify-center mb-6">
+                    <i data-lucide="map" class="w-8 h-8 text-green-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Nearby Services Map</h3>
+                <p class="text-slate-300">
+                    See grocery stores, gas stations, and pet stores on an interactive map, with distance calculations.
+                </p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="feature-card glass-card rounded-2xl p-8">
+                <div class="w-16 h-16 bg-yellow-500/20 rounded-xl flex items-center justify-center mb-6">
+                    <i data-lucide="target" class="w-8 h-8 text-yellow-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Savings Goals Tracker</h3>
+                <p class="text-slate-300">
+                    Set multiple savings goals (vacation, car, house) and track your monthly progress automatically.
+                </p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="feature-card glass-card rounded-2xl p-8">
+                <div class="w-16 h-16 bg-red-500/20 rounded-xl flex items-center justify-center mb-6">
+                    <i data-lucide="bell" class="w-8 h-8 text-red-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Budget Alerts</h3>
+                <p class="text-slate-300">
+                    Get notified when you're overspending in categories like rent, transport, or lifestyle expenses.
+                </p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="feature-card glass-card rounded-2xl p-8">
+                <div class="w-16 h-16 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-6">
+                    <i data-lucide="globe" class="w-8 h-8 text-indigo-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Multi-Country Support</h3>
+                <p class="text-slate-300">
+                    Works in 100+ countries with automatic currency conversion and local cost-of-living adjustments.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="relative z-10 container mx-auto px-6 py-20">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                How It <span class="gradient-text">Works</span>
+            </h2>
+            <p class="text-xl text-slate-300 max-w-2xl mx-auto">
+                Get your personalized budget in just 3 simple steps
+            </p>
+        </div>
+
+        <div class="max-w-4xl mx-auto space-y-8">
+            <!-- Step 1 -->
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <div
+                    class="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-3xl font-bold">
+                    1
+                </div>
+                <div class="glass-card rounded-2xl p-8 flex-grow">
+                    <h3 class="text-2xl font-bold mb-3">Enter Your Location & Income</h3>
+                    <p class="text-slate-300">
+                        Tell us where you live and your monthly income. We'll use your location to find real prices in
+                        your area.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <div
+                    class="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-3xl font-bold">
+                    2
+                </div>
+                <div class="glass-card rounded-2xl p-8 flex-grow">
+                    <h3 class="text-2xl font-bold mb-3">Customize Your Lifestyle</h3>
+                    <p class="text-slate-300">
+                        Select your transport mode, household size, pets, and lifestyle preferences. We'll tailor the
+                        budget to you.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <div
+                    class="flex-shrink-0 w-20 h-20 bg-gradient-to-br from-pink-500 to-red-500 rounded-full flex items-center justify-center text-3xl font-bold">
+                    3
+                </div>
+                <div class="glass-card rounded-2xl p-8 flex-grow">
+                    <h3 class="text-2xl font-bold mb-3">Get Your Smart Budget</h3>
+                    <p class="text-slate-300">
+                        See your complete monthly breakdown with real prices, nearby services, and savings
+                        recommendations.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="relative z-10 container mx-auto px-6 py-20">
+        <div class="glass-card rounded-3xl p-12 text-center max-w-4xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                Ready to Take Control of Your <span class="gradient-text">Finances</span>?
+            </h2>
+            <p class="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+                Join thousands of users who are budgeting smarter with location-based insights.
+            </p>
+            <a href="index.html"
+                class="inline-flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-bold text-xl hover:shadow-2xl hover:shadow-blue-500/50 transition-all">
+                Start Free Now <i data-lucide="arrow-right" class="w-6 h-6"></i>
+            </a>
+            <p class="text-sm text-slate-400 mt-4">No credit card required • 100% Free</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 container mx-auto px-6 py-12 border-t border-white/10">
+        <div class="text-center text-slate-400">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="p-2 bg-blue-500/20 rounded-lg">
+                    <i data-lucide="wallet" class="w-6 h-6 text-blue-400"></i>
+                </div>
+                <span class="text-xl font-bold gradient-text">GeoBudget</span>
+            </div>
+            <p>&copy; 2024 GeoBudget. All rights reserved.</p>
+            <p class="mt-2 text-sm">Smart budgeting powered by location intelligence.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
