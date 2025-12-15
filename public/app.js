@@ -1696,8 +1696,12 @@ window.handleAuth = async (e) => {
 
         // Update UI (with small delay to ensure DOM is ready)
         setTimeout(() => {
-            console.log('Calling updateAuthUI after login');
-            updateAuthUI();
+            console.log('Calling updateAuthUI_v2 after login');
+            if (typeof updateAuthUI_v2 === 'function') {
+                updateAuthUI_v2();
+            } else {
+                console.error('CRITICAL: updateAuthUI_v2 function not found! Old code is running.');
+            }
         }, 100);
 
         // Hide auth modal
@@ -2123,8 +2127,8 @@ async function loadUserData() {
     return false;
 }
 
-// Update Auth UI (Header Button) - v2024-12-15
-function updateAuthUI() {
+// Update Auth UI (Header Button) - v2024-12-15-v2
+function updateAuthUI_v2() {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
     const btnText = document.getElementById('auth-btn-text');
@@ -2195,7 +2199,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Update UI based on auth state
-    updateAuthUI();
+    if (typeof updateAuthUI_v2 === 'function') {
+        updateAuthUI_v2();
+    } else {
+        console.error('CRITICAL: updateAuthUI_v2 function not found! Old code is running.');
+    }
 
     if (token) {
         // Hide auth modal if it exists
