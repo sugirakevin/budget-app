@@ -2156,6 +2156,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
     const token = localStorage.getItem('token');
 
+    // Redirect to landing page if not logged in (unless already on landing page)
+    if (!token && !window.location.pathname.includes('landing.html')) {
+        window.location.href = 'landing.html';
+        return;
+    }
+
     // Update UI based on auth state
     updateAuthUI();
 
