@@ -2156,8 +2156,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
     const token = localStorage.getItem('token');
 
-    // Redirect to landing page if not logged in (unless already on landing page)
-    if (!token && !window.location.pathname.includes('landing.html')) {
+    // Check if user intentionally came to the app (from landing page or direct link)
+    const allowAppAccess = sessionStorage.getItem('allowAppAccess');
+
+    // Redirect to landing page if not logged in AND not intentionally accessing the app
+    if (!token && !allowAppAccess && !window.location.pathname.includes('landing.html')) {
         window.location.href = 'landing.html';
         return;
     }
