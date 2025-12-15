@@ -2181,6 +2181,27 @@ function updateAuthUI_v2() {
     console.log('=== END DEBUG ===');
 }
 
+// Restart Wizard (Reset Data)
+function restartWizard() {
+    if (!confirm('Are you sure you want to reset your budget data? This will clear your current progress.')) {
+        return;
+    }
+
+    // Reset state
+    state.data = {};
+    state.estimates = {};
+    state.step = 1; // Go to Step 1 (Location)
+
+    // Close profile modal
+    toggleProfileModal();
+
+    // Render step 1
+    renderStep();
+
+    // Save empty state to backend/local storage
+    saveData();
+}
+
 // Delete Account
 async function deleteAccount() {
     if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
