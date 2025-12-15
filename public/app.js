@@ -1694,8 +1694,11 @@ window.handleAuth = async (e) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        // Update UI
-        updateAuthUI();
+        // Update UI (with small delay to ensure DOM is ready)
+        setTimeout(() => {
+            console.log('Calling updateAuthUI after login');
+            updateAuthUI();
+        }, 100);
 
         // Hide auth modal
         const authModal = document.getElementById('auth-modal');
@@ -2128,26 +2131,48 @@ function updateAuthUI() {
     const btnTrigger = document.getElementById('btn-auth-trigger');
     const profileEmail = document.getElementById('profile-email');
 
-    console.log('updateAuthUI called - token:', !!token, 'user:', userStr);
+    console.log('=== updateAuthUI DEBUG ===');
+    console.log('Token exists:', !!token);
+    console.log('User data:', userStr);
+    console.log('btnText element:', btnText);
+    console.log('btnTrigger element:', btnTrigger);
+    console.log('profileEmail element:', profileEmail);
 
     if (token && userStr) {
         const user = JSON.parse(userStr);
-        console.log('Updating UI for logged-in user:', user.email);
-        if (btnText) btnText.innerText = "Profile";
+        console.log('✅ User is logged in:', user.email);
+        console.log('Attempting to update button to "Profile"...');
+
+        if (btnText) {
+            btnText.innerText = "Profile";
+            console.log('✓ Updated btnText to Profile');
+        } else {
+            console.error('❌ btnText element not found!');
+        }
+
         if (btnTrigger) {
             btnTrigger.onclick = toggleProfileModal;
             btnTrigger.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i> <span id="auth-btn-text">Profile</span>`;
+            console.log('✓ Updated btnTrigger HTML');
+        } else {
+            console.error('❌ btnTrigger element not found!');
         }
-        if (profileEmail) profileEmail.innerText = user.email;
+
+        if (profileEmail) {
+            profileEmail.innerText = user.email;
+            console.log('✓ Updated profile email');
+        }
     } else {
-        console.log('Updating UI for logged-out state');
+        console.log('❌ User is NOT logged in');
         if (btnText) btnText.innerText = "Login";
         if (btnTrigger) {
             btnTrigger.onclick = toggleAuthModal;
             btnTrigger.innerHTML = `<i data-lucide="log-in" class="w-4 h-4"></i> <span id="auth-btn-text">Login</span>`;
         }
     }
+
     lucide.createIcons();
+    console.log('=== END DEBUG ===');
 }
 
 // Initialize App
