@@ -1234,10 +1234,19 @@ function renderDashboard() {
 
     return `
         <div class="animate-fade-in h-full flex flex-col">
-            <div class="text-center mb-6">
+            <div class="text-center mb-6 relative">
                 <h2 class="text-3xl font-bold text-white">Monthly Budget</h2>
                 <p class="text-slate-400">For <span class="text-blue-400">${state.data.city}</span>, ${state.data.country}</p>
-            </div >
+                
+                <!-- View Toggle -->
+                <div class="absolute right-0 top-1/2 -translate-y-1/2">
+                    <button onclick="toggleDashboardView('${state.currentDashboardView === 'list' ? 'graph' : 'list'}')" 
+                        class="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 border border-white/10">
+                        <i data-lucide="${state.currentDashboardView === 'list' ? 'bar-chart-3' : 'list'}" class="w-4 h-4"></i>
+                        ${state.currentDashboardView === 'list' ? 'Graph View' : 'List View'}
+                    </button>
+                </div>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white/5 p-4 rounded-xl border border-white/10">
@@ -1250,7 +1259,8 @@ function renderDashboard() {
                 </div>
             </div>
 
-            <div class="space-y-4 flex-grow overflow-y-auto pr-2">
+            <!-- List View -->
+            <div id="dashboard-list-view" class="${state.currentDashboardView === 'list' ? '' : 'hidden'} space-y-4 flex-grow overflow-y-auto pr-2">
                 <!-- Map Container -->
                 <div id="map" class="mb-4 border border-white/10"></div>
 
@@ -1462,8 +1472,133 @@ function renderDashboard() {
                     </div>
                 </div>
             </div>
+
+            <!-- Graph View -->
+            <div id="dashboard-graph-view" class="${state.currentDashboardView === 'graph' ? '' : 'hidden'} flex-grow overflow-y-auto pr-2 space-y-6">
+                <!-- Expense Breakdown (Donut) -->
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <h3 class="font-semibold text-slate-300 mb-4 text-center">Expense Breakdown</h3>
+                    <div class="h-64 relative">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Income vs Expenses (Bar) -->
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <h3 class="font-semibold text-slate-300 mb-4 text-center">Income vs Expenses</h3>
+                    <div class="h-64 relative">
+                        <canvas id="balanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
+}
+
+// Toggle Dashboard View
+window.toggleDashboardView = (view) => {
+    state.currentDashboardView = view;
+    renderStep(); // Re-render to update UI
+
+    if (view === 'graph') {
+        // Wait for DOM update then init charts
+        setTimeout(initDashboardCharts, 100);
+    }
+};
+
+// Initialize Dashboard Charts
+function initDashboardCharts() {
+    const { income, rent } = state.data;
+    const { transport, groceries, utilities, petCost, loanCost, lifestyleCost, savings, discretionary } = state.estimates;
+
+    // Calculate total additional savings
+    const additionalSavings = (state.data.additionalSavingsGoals || []).reduce((sum, goal) => sum + goal.monthlyAmount, 0);
+    const totalSavings = savings + additionalSavings;
+
+    // 1. Expense Breakdown (Donut)
+    const ctxExpense = document.getElementById('expenseChart');
+    if (ctxExpense) {
+        // Destroy existing chart if any
+        if (window.expenseChartInstance) {
+            window.expenseChartInstance.destroy();
+        }
+
+        window.expenseChartInstance = new Chart(ctxExpense, {
+            type: 'doughnut',
+            data: {
+                labels: ['Rent', 'Groceries', 'Transport', 'Utilities', 'Loans', 'Lifestyle', 'Pets', 'Savings'],
+                datasets: [{
+                    data: [rent, groceries, transport, utilities, loanCost, lifestyleCost, petCost, totalSavings],
+                    backgroundColor: [
+                        '#3b82f6', // Blue (Rent)
+                        '#10b981', // Emerald (Groceries)
+                        '#f59e0b', // Amber (Transport)
+                        '#6366f1', // Indigo (Utilities)
+                        '#ef4444', // Red (Loans)
+                        '#8b5cf6', // Violet (Lifestyle)
+                        '#ec4899', // Pink (Pets)
+                        '#22c55e'  // Green (Savings)
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Income vs Expenses (Bar)
+    const ctxBalance = document.getElementById('balanceChart');
+    if (ctxBalance) {
+        if (window.balanceChartInstance) {
+            window.balanceChartInstance.destroy();
+        }
+
+        const totalExpenses = rent + groceries + transport + utilities + loanCost + lifestyleCost + petCost + totalSavings;
+
+        window.balanceChartInstance = new Chart(ctxBalance, {
+            type: 'bar',
+            data: {
+                labels: ['Income', 'Expenses', 'Remaining'],
+                datasets: [{
+                    label: 'Amount',
+                    data: [income, totalExpenses, discretionary],
+                    backgroundColor: [
+                        '#22c55e', // Green (Income)
+                        '#ef4444', // Red (Expenses)
+                        '#3b82f6'  // Blue (Remaining)
+                    ],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
 }
 
 function initMap() {
@@ -2013,6 +2148,7 @@ window.logout = () => {
         lifestyle: { gym: 0, streaming: 0, music: 0, other: 0 }
     };
     state.estimates = {};
+    state.currentDashboardView = 'list'; // 'list' or 'graph'
 
     // Redirect to welcome page
     renderStep();
