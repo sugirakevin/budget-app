@@ -1826,8 +1826,9 @@ window.handleAuth = async (e) => {
         if (!res.ok) throw new Error(data.error || 'Authentication failed');
 
         // Success - Store token
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        // Success - Store token
+        localStorage.setItem('budget_token', data.token);
+        localStorage.setItem('budget_user', JSON.stringify(data.user));
 
         // Update UI (with small delay to ensure DOM is ready)
         setTimeout(() => {
@@ -2117,7 +2118,7 @@ console.log('📋 Steps array:', steps ? `${steps.length} steps` : 'undefined');
 window.logout = () => {
     localStorage.removeItem('budget_token');
     localStorage.removeItem('budget_user');
-    updateAuthUI(null);
+    updateAuthUI_v2();
     document.getElementById('profile-modal').classList.add('hidden');
 
     // Reset state to initial values
@@ -2216,7 +2217,7 @@ window.addGoalInputStep = () => {
 
 // Save/Load User Data
 async function saveUserData() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('budget_token');
     if (!token) return;
 
     try {
@@ -2265,8 +2266,8 @@ async function loadUserData() {
 
 // Update Auth UI (Header Button) - v2024-12-15-v2
 function updateAuthUI_v2() {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
+    const token = localStorage.getItem('budget_token');
+    const userStr = localStorage.getItem('budget_user');
     const btnText = document.getElementById('auth-btn-text');
     const btnTrigger = document.getElementById('btn-auth-trigger');
     const profileEmail = document.getElementById('profile-email');
@@ -2344,7 +2345,7 @@ async function deleteAccount() {
         return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('budget_token');
     if (!token) return;
 
     try {
@@ -2376,7 +2377,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     stepIndicator = document.getElementById('step-indicator');
 
     // Check if user is logged in
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('budget_token');
 
     // Check if user intentionally came to the app (from landing page or direct link)
     const allowAppAccess = sessionStorage.getItem('allowAppAccess');
